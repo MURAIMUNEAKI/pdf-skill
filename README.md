@@ -28,15 +28,111 @@ Claude Code に「この PDF を解説サイトにして」と頼むと、スキ
 
 ### Codex（OpenAI Codex CLI）
 
+Codex は、ホームフォルダの中の `.codex\skills`（Mac/Linux は `~/.codex/skills`）に置かれたスキルを読みます。
+そこに、このリポジトリを `pdf-skill` という名前のフォルダで置けば使えるようになります。
+
+#### 0. 事前に必要なもの
+
+- Codex CLI（ターミナルで `codex` と打って起動できること）
+- Python 3.8 以上
+- Git（無ければ、下の「Git を使わない入れ方」で入れる）
+
+#### 1. ターミナルを開く
+
+- **Windows**：スタートメニューで「PowerShell」（または「ターミナル」）と検索して開く
+- **Mac**：Finder →「アプリケーション」→「ユーティリティ」→「ターミナル」
+
+#### 2. スキルを置く（コマンドを1行ずつ貼り付けて Enter）
+
+**Windows（PowerShell）**
+
+```powershell
+git clone https://github.com/MURAIMUNEAKI/pdf-skill.git "$env:USERPROFILE\.codex\skills\pdf-skill"
+```
+
+```powershell
+pip install markdown pillow pypdf
+```
+
+```powershell
+dir "$env:USERPROFILE\.codex\skills\pdf-skill"
+```
+
+**Mac / Linux**
+
 ```bash
 git clone https://github.com/MURAIMUNEAKI/pdf-skill.git ~/.codex/skills/pdf-skill
 ```
 
-スキル機能を使わない場合は、作業するリポジトリの `AGENTS.md` に次の1行を書きます。
+```bash
+pip3 install markdown pillow pypdf
+```
+
+```bash
+ls ~/.codex/skills/pdf-skill
+```
+
+最後のコマンドで `SKILL.md` `template` `references` などが表示されれば、置けています。
+（`.codex\skills` フォルダが無くても、`git clone` が自動で作ります）
+
+**Git を使わない入れ方**
+
+1. https://github.com/MURAIMUNEAKI/pdf-skill を開き、緑の「Code」ボタン →「Download ZIP」
+2. ZIP を展開し、できたフォルダ `pdf-skill-main` の名前を **`pdf-skill`** に変える
+3. そのフォルダを次の場所に移す（`.codex` は隠しフォルダなので、アドレスを直接入力して開く）
+   - **Windows**：エクスプローラーのアドレス欄に `%USERPROFILE%\.codex\skills` と入力して Enter（「見つからない」と出たら、`%USERPROFILE%\.codex` を開いて `skills` フォルダを作る）
+   - **Mac**：Finder で `⌘ + Shift + G` を押し、`~/.codex/skills` と入力（無ければ `~/.codex` に `skills` フォルダを作る）
+4. `pdf-skill` の中に `SKILL.md` が直接入っていることを確かめる（`pdf-skill\pdf-skill-main\SKILL.md` のように一段深くなっていたら、中身を一段上に出す）
+
+#### 3. Codex でスキルが見えるか確かめる
+
+Codex をすでに起動していたら、いったん終了して起動し直します。Codex の入力欄で次のように打ちます。
 
 ```text
-PDFから解説サイトを作るときは ~/.codex/skills/pdf-skill/SKILL.md の手順に従う。
+/skills
 ```
+
+一覧に `pdf-skill` が出れば準備完了です。
+
+#### 4. 使う
+
+1. サイトを作るための空のフォルダを作り（例：デスクトップに `mysite-work`）、元の PDF をそこに入れる
+2. ターミナルでそのフォルダに移動して Codex を起動する
+
+   ```bash
+   cd ~/Desktop/mysite-work
+   ```
+
+   ```bash
+   codex
+   ```
+
+3. 次のように頼む。確実にこのスキルを使わせたいときは、頭に `$pdf-skill` を付ける
+
+   ```text
+   $pdf-skill この PDF（資料.pdf）を、原文と解説で読める解説サイトにして。
+   サイト名は「〇〇の解説」、公開URLは https://example.com/xxx/ 、著者は〇〇。サイトはこのフォルダの mysite に作って。
+   ```
+
+Codex は作業フォルダの外に書き込めないことがあるので、サイトは作業フォルダの中（例 `./mysite`）に作るよう頼みます。
+
+#### スキルを最新にする
+
+```bash
+git -C ~/.codex/skills/pdf-skill pull
+```
+
+（Windows は `git -C "$env:USERPROFILE\.codex\skills\pdf-skill" pull`。ZIP で入れた場合は、フォルダを入れ替える）
+
+#### `/skills` に出ないとき（予備の方法）
+
+Codex のバージョンによっては、スキル機能が無かったり置き場所が違ったりします。その場合は、作業フォルダに `AGENTS.md` というファイルを作り、次の1行を書きます。Codex は起動したフォルダの `AGENTS.md` を読むので、同じ手順で動きます。
+
+```text
+PDFから解説サイトを作るときは ~/.codex/skills/pdf-skill/SKILL.md を読み、その手順に従う。
+```
+
+（Windows で入れた場合は、パスを `C:\Users\<ユーザー名>\.codex\skills\pdf-skill\SKILL.md` に書き換える）
 
 ### そのほかのエージェント・人が使う場合
 
