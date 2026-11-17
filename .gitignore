@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+# template/ でビルドを試したときの生成物（ひな形には入れない）
+template/*.html
+template/*.md
+template/*.txt
+template/*.json
+template/*.xml
+template/*.png
+template/*.ico
+template/ogp/

@@ -1,0 +1,37 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<title>375px はみ出し検査</title></head><body>
+<p>sitemap.xml の全ページを幅375pxで開き、横にはみ出すページを探します（ローカルサーバーで開く。例 http://localhost:8000/_build/overflow375.html）。<br>
+特定のページだけ：overflow375.html#a.html,b.html</p>
+<pre id="out">running…</pre>
+<iframe id="f" style="width:375px;height:700px;border:1px solid #ccc"></iframe>
+<script>
+(async () => {
+  const out = document.getElementById('out'), f = document.getElementById('f');
+  const sm = await (await fetch('../sitemap.xml')).text();
+  let pages = [...new Set([...sm.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1].split('/').pop() || 'index.html'))];
+  if (location.hash.length > 1) pages = location.hash.slice(1).split(',');
+  const bad = [];
+  for (const [i, p] of pages.entries()) {
+    out.textContent = `checking ${i + 1}/${pages.length} ${p}`;
+    f.src = '../' + p;
+    const t0 = Date.now();
+    let d;
+    while (Date.now() - t0 < 8000) {           // style.css が読み込まれるまで待つ
+      await new Promise(r => setTimeout(r, 100));
+      d = f.contentDocument;
+      const l = d && d.location.href.endsWith(p) && d.readyState !== 'loading' && d.querySelector('link[href*="style.css"]');
+      if (l && l.sheet && l.sheet.cssRules.length) break;
+    }
+    await new Promise(r => setTimeout(r, 1000));
+    const sw = d.documentElement.scrollWidth;
+    if (sw > 375) {
+      const over = [...d.querySelectorAll('body *')]
+        .filter(e => e.getBoundingClientRect().right > 376 && d.defaultView.getComputedStyle(e).display !== 'none')
+        .slice(-3).map(e => e.outerHTML.slice(0, 160));
+      bad.push(`${p} scrollWidth=${sw}\n    ${over.join('\n    ')}`);
+    }
+  }
+  out.textContent = `DONE ${pages.length} pages, over=${bad.length}\n` + bad.join('\n');
+  f.remove();
+})();
+</script></body></html>
