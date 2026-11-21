@@ -19,12 +19,24 @@ Claude Code・Codex・そのほか SKILL.md / AGENTS.md を読めるエージェ
 
 ### Claude Code
 
+**Windows（PowerShell）**
+
+```powershell
+git clone https://github.com/MURAIMUNEAKI/pdf-skill.git "$env:USERPROFILE\.claude\skills\pdf-skill"
+```
+
+（Windows の PowerShell 5.1 では `~/...` と書くと、ホームフォルダではなく、今いるフォルダの中に「~」という名前のフォルダが作られてしまいます。必ず上の書き方にしてください）
+
+**Mac / Linux**
+
 ```bash
 git clone https://github.com/MURAIMUNEAKI/pdf-skill.git ~/.claude/skills/pdf-skill
 ```
 
 （プロジェクトだけで使うなら `.claude/skills/pdf-skill` に置く）。
-Claude Code に「この PDF を解説サイトにして」と頼むと、スキルが使われます。
+入れたあとに**新しいセッションを開き**、「pdf-skill スキルを使って、この PDF を解説サイトにして」のように、スキルの名前で頼みます。
+`references/design.md` のような、スキルの中のファイル名で指示する必要はありません（スキルが自分で読みます）。
+更新は、スキルのフォルダで `git pull`。
 
 ### Codex（OpenAI Codex CLI）
 
