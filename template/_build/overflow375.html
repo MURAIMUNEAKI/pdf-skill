@@ -1,7 +1,7 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex">
 <title>375px はみ出し検査</title></head><body>
-<p>sitemap.xml の全ページを幅375pxで開き、横にはみ出すページを探します（ローカルサーバーで開く。例 http://localhost:8000/_build/overflow375.html）。<br>
-特定のページだけ：overflow375.html#a.html,b.html</p>
+<p>sitemap.xml の全ページを幅375pxで開き、横にはみ出すページと、解説欄の顔写真が本文に重なるページを探します（ローカルサーバーで開く。例 http://localhost:8000/_build/overflow375.html）。<br>
+特定のページだけ：overflow375.html#a.html,b.html　（問題が出たページは、読み込みの失敗と区別するため自動で1回だけ開き直して確かめます）</p>
 <pre id="out">running…</pre>
 <iframe id="f" style="width:375px;height:700px;border:1px solid #ccc"></iframe>
 <script>
@@ -10,26 +10,44 @@
   const sm = await (await fetch('../sitemap.xml')).text();
   let pages = [...new Set([...sm.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1].split('/').pop() || 'index.html'))];
   if (location.hash.length > 1) pages = location.hash.slice(1).split(',');
-  const bad = [];
-  for (const [i, p] of pages.entries()) {
-    out.textContent = `checking ${i + 1}/${pages.length} ${p}`;
-    f.src = '../' + p;
+
+  async function check(p, retry) {
+    f.src = '../' + p + (retry ? '?retry=' + Date.now() : '');
     const t0 = Date.now();
-    let d;
+    let d, css = false;
     while (Date.now() - t0 < 8000) {           // style.css が読み込まれるまで待つ
       await new Promise(r => setTimeout(r, 100));
       d = f.contentDocument;
-      const l = d && d.location.href.endsWith(p) && d.readyState !== 'loading' && d.querySelector('link[href*="style.css"]');
-      if (l && l.sheet && l.sheet.cssRules.length) break;
+      const l = d && d.location.pathname.endsWith('/' + p) && d.readyState === 'complete' && d.querySelector('link[href*="style.css"]');
+      if (l && l.sheet && l.sheet.cssRules.length) { css = true; break; }
     }
     await new Promise(r => setTimeout(r, 1000));
+    if (!css) return [`${p} style.css を読み込めませんでした`];
+    const issues = [];
+    // 解説欄の顔写真が、見出しの帯（「本記事の著者の解説」）からはみ出して本文に重なっていないか
+    [...d.querySelectorAll('.voice')].forEach((v, k) => {
+      const fc = v.querySelector('.voice-face'), lb = v.querySelector('.voice-label');
+      if (!fc || !lb || d.defaultView.getComputedStyle(fc).display === 'none') return;
+      const a = fc.getBoundingClientRect(), b = lb.getBoundingClientRect();
+      if (a.top < b.top - 1 || a.bottom > b.bottom + 1)
+        issues.push(`${p} 解説欄${k + 1}：顔写真が見出しの帯からはみ出し（写真 ${Math.round(a.top)}〜${Math.round(a.bottom)} / 帯 ${Math.round(b.top)}〜${Math.round(b.bottom)}）`);
+    });
     const sw = d.documentElement.scrollWidth;
     if (sw > 375) {
       const over = [...d.querySelectorAll('body *')]
         .filter(e => e.getBoundingClientRect().right > 376 && d.defaultView.getComputedStyle(e).display !== 'none')
         .slice(-3).map(e => e.outerHTML.slice(0, 160));
-      bad.push(`${p} scrollWidth=${sw}\n    ${over.join('\n    ')}`);
+      issues.push(`${p} scrollWidth=${sw}\n    ${over.join('\n    ')}`);
     }
+    return issues;
+  }
+
+  const bad = [];
+  for (const [i, p] of pages.entries()) {
+    out.textContent = `checking ${i + 1}/${pages.length} ${p}`;
+    let issues = await check(p, false);
+    if (issues.length) issues = await check(p, true);   // 一時的な読み込みの失敗ではないか、開き直して確かめる
+    bad.push(...issues);
   }
   out.textContent = `DONE ${pages.length} pages, over=${bad.length}\n` + bad.join('\n');
   f.remove();

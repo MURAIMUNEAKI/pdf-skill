@@ -1,4 +1,4 @@
-// PDF解説サイト — 目次の現在地表示・「先頭へ」ボタン・スマホのメニュー・サイト内検索
+// PDF解説サイト — 目次の現在地表示・「先頭へ」ボタン・スマホのメニュー・原文のコピー・サイト内検索
 (function () {
   var bn = document.querySelector('details.bn');
   if (bn && window.matchMedia('(max-width: 1024px)').matches) bn.removeAttribute('open');
@@ -99,6 +99,32 @@
       var src = document.getElementById(btn.getAttribute('data-copy'));
       if (!src) return;
       var text = src.textContent.replace(/\s+$/, '');
+      var done = function () {
+        btn.textContent = 'コピーしました';
+        btn.classList.add('done');
+        setTimeout(function () { btn.textContent = 'コピー'; btn.classList.remove('done'); }, 2000);
+      };
+      var fallback = function () {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+      else fallback();
+    });
+  });
+
+  // 原文引用の右上の「コピー」ボタン：原文と、出典（資料名・ページ）をコピーする
+  document.querySelectorAll('.genbun-copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var box = btn.closest('.genbun');
+      var body = box.querySelector('.genbun-body');
+      var label = box.querySelector('.genbun-label');
+      var src = label ? label.cloneNode(true) : null;
+      if (src) src.querySelectorAll('b,a').forEach(function (x) { x.remove(); });
+      var text = body.innerText.replace(/\n{3,}/g, '\n\n').trim() + (src ? '\n（出典：' + src.textContent.trim() + '）' : '');
       var done = function () {
         btn.textContent = 'コピーしました';
         btn.classList.add('done');

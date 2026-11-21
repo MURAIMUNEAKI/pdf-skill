@@ -34,7 +34,8 @@ chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1280,1600 --
 
 ローカルサーバーを立てたまま `http://localhost:8000/_build/overflow375.html` を開く。
 sitemap.xml の全ページを 375px の枠で順に開き、`scrollWidth` が 375 を超えたページと、はみ出している要素を表示する。
-`DONE N pages, over=0` になればよい。特定のページだけ見るときは `overflow375.html#a.html,b.html`。
+`DONE N pages, over=0` になればよい。
+あわせて、解説欄（「本記事の著者の解説」）の顔写真が見出しの帯からはみ出して本文に重なっていないかも調べる。特定のページだけ見るときは `overflow375.html#a.html,b.html`。
 
 はみ出しのよくある原因：長いURL・英単語（→ `overflow-wrap:anywhere`）、幅指定の画像・表、`<pre>`。
 
@@ -43,3 +44,8 @@ sitemap.xml の全ページを 375px の枠で順に開き、`scrollWidth` が 3
 - 本番URLで数ページ表示する（CSS/JS のキャッシュは `?v=<ハッシュ>` で自動更新される）
 - Google の「リッチリザルト テスト」で FAQ・パンくずの構造化データを確かめる
 - sitemap.xml を Search Console に送る
+
+## よくある失敗（実例）
+
+- **スマホで解説欄の顔写真が本文の1行目に重なる**：`style.css` の末尾にある「Stitch デザイン」の層は、PC用の指定（顔写真48px・解説欄の上の余白0）を、それより前に書いたスマホ用の指定より後ろで上書きしている。スマホ用の見た目を変えるときは、**ファイルの最後の `@media (max-width:720px)` の中**に書く（前の方のスマホ用ブロックに書いても、後ろの PC 用の指定に負ける）。直したら上の検査ページで over=0 を確かめる
+- **検査ページで多くのページが scrollWidth 1400 前後と出る**：`style.css` が読み込めていない（ローカルサーバーやキャッシュの一時的な失敗）。そのページだけ `#a.html` で再検査する

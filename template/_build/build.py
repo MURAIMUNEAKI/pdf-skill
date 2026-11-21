@@ -671,7 +671,7 @@ def author_box():
 
 
 def voice_html(inner):
-    return (f'<div class="voice">{face("voice-face", 56)}'
+    return (f'<div class="voice{"" if A.get("image") else " no-face"}">{face("voice-face", 56)}'
             f'<div class="voice-body"><p class="voice-label">{esc(A.get("label", "本記事の著者"))}の解説</p>{inner}</div></div>')
 
 
@@ -822,7 +822,7 @@ def render_section(slug, page_short, sec_no, sec_title, text, used, faq_pairs):
         if name == "":
             parts.append(f'<div class="prose">{autolink(md_to_html(body), used)}</div>')
         elif name.startswith("原文"):
-            parts.append(f'<div class="genbun">{genbun_label(name)}'
+            parts.append(f'<div class="genbun"><button class="genbun-copy" type="button" aria-label="原文をコピー">コピー</button>{genbun_label(name)}'
                          f'<div class="genbun-body">{genbun_html(body)}</div></div>')
         elif name.startswith("解説"):
             if not answer:

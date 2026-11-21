@@ -1133,6 +1133,7 @@ body{background:var(--bg);letter-spacing:.03em}
   .voice-face{left:18px;top:7px;width:30px;height:30px;box-shadow:none;border-radius:6px}
   .voice-body{padding:0 14px 2px}
   .voice-label{margin:0 -14px 10px!important;padding:6px 14px 6px 52px}
+  .voice.no-face .voice-label{padding-left:14px}  /* 著者の顔写真が無いとき（site.json の author.image が空） */
 }
 @media print{
   .gtabs,.crumb-band,.page-hero,.ab-btns{display:none}
@@ -1148,3 +1149,38 @@ body{background:var(--bg);letter-spacing:.03em}
   linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/28px 28px,
   linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/28px 28px,var(--navy)}
 .page-hero.no-img::after{background:none}
+
+/* ---------------------------------------------------------------- 原文引用：黒い四角の枠・真っ白な地・右上にコピー */
+.genbun{position:relative;margin:0 0 24px;padding:16px 20px 14px;border:2px solid #000;border-radius:0;background:#fff;box-shadow:none}
+.genbun-label{margin:0 0 14px;padding:0 96px 12px 0;border:0;border-bottom:1px solid #000;color:#000;font-size:13px}
+.genbun-label b{border-radius:0;background:#000;color:#fff}
+.genbun-src{margin-left:0;color:#000;text-decoration:underline;text-underline-offset:3px}
+.genbun-src:hover{color:var(--accent)}
+.genbun-body{padding:0;border-radius:0;background:#fff;color:#000}
+.genbun-body .g-h{color:#000}
+.genbun-body .table-wrap{border-color:#000}
+.genbun-copy{position:absolute;top:12px;right:12px;padding:5px 14px;border:1.5px solid #000;border-radius:0;background:#fff;color:#000;font:700 12.5px/1.4 var(--sans);letter-spacing:.06em;cursor:pointer}
+.genbun-copy:hover{background:#000;color:#fff}
+.genbun-copy.done{border-color:var(--accent);background:var(--accent);color:#fff}
+.genbun-copy:focus-visible{outline:3px solid #22d3ee;outline-offset:2px}
+
+/* 原文引用を白黒にしたぶん、周りの部品の色を少し濃くして区別をはっきりさせる */
+:root{--muted:#475569;--line:#cbd5e1}
+body,.page-main{background:#eef2f7}
+.sec{border-color:#cbd5e1;box-shadow:0 1px 2px rgba(15,23,42,.06)}
+.qa-box{border-color:#bcd0ef;background:#e3ecfb}
+.qa-box .answer-first{color:#0b1c30}
+.voice-body{border-color:#cbd5e1;border-left-color:var(--navy)}
+.voice-label{background:#e8edf4;border-bottom-color:#cbd5e1}
+.points{border-left-color:#0e7490;background:#e2e8f0}
+.role{border-color:#bcd0ef;background:#e3ecfb}
+.qa{border-color:#cbd5e1;background:#fff}
+.toc-side,.bn,.author-bar{border-color:#cbd5e1}
+.prose,.voice-body,.qa-a{color:#1e293b}
+
+@media (max-width:720px){
+  .genbun{padding:12px 14px 10px}
+  .genbun-label{padding-right:78px}
+  .genbun-copy{top:9px;right:9px;padding:4px 10px;font-size:12px}
+}
+@media print{.genbun-copy{display:none}}
