@@ -28,6 +28,7 @@ PDF資料（法令・ガイドライン・白書・通知・社内規程など�
 | `template/_build/src/` | 原稿（Markdown）。サンプルは架空の「みらい市 防災ハンドブック」 |
 | `template/assets/style.css`, `site.js` | デザインと動き（目次の現在地・検索・右上とスマホのメニュー・表のカード化） |
 | `template/_build/.gitignore` | `__pycache__/` と元のPDF（`source.pdf`）をコミットしない |
+| `template/.gitignore` | ビルドの途中でサイトのフォルダ直下にできる原稿（原文を埋め込んだ `*.md`）をコミットしない |
 | `references/manuscript-format.md` | **原稿の書き方（必読）** |
 | `references/site-json.md` | `site.json` の全項目 |
 | `references/design.md` | デザインの部品・色・スマホの規則 |
@@ -53,7 +54,7 @@ python mysite/_build/pdf_to_text.py 資料.pdf doc1 --source
 
 - `raw/doc1.txt`：照合用。**手で直さない**（PDFの文字そのもの）
 - `source/doc1.txt`：1ページ＝1ブロックのひな形。これを節の単位に切り分けて `@@ <id> p=<ページ>` を付け直し、改行・箇条を読みやすく整える（**文言は変えない**）
-- 原文ブロックは、章ごとのファイル（`source/doc1_1.txt`、`doc1_2.txt` … ＝資料のファイル名＋`_`）に分けてもよい。`build.py` が `doc1.txt` と合わせて読む。章を並行して書くときに便利（下の「大きな資料を並行して作る」）
+- 原文ブロックは、章ごとのファイル（`source/doc1_1.txt`、`doc1_2.txt` … ＝資料のファイル名＋`_`）に分けてもよい。`build.py` が `doc1.txt`（無くてもよい）と合わせて読む。章を並行して書くときに便利（下の「大きな資料を並行して作る」）
 - `p=` には**印字ページ**（資料に印刷されたページ番号）を書き、PDFのページとの差を `offset` で合わせると、読者が原本で探しやすい
 - PDFのページ番号と印字ページがずれる資料は、`site.json` の `offset`（raw のページ − `p=` の値）か `plabel` で合わせる
 - スキャン画像だけのPDFは文字が取れない。OCRしたテキストを同じ形式で `raw/` に置く
@@ -82,7 +83,7 @@ python mysite/_build/build.py           # HTML などを生成
 python mysite/_build/verify_quotes.py   # 原文の照合。「不一致 0 件」になるまで source/ を直す
 ```
 
-不一致が出たら、`source/` のブロックを `raw/` の該当ページと見比べて直す（よくある原因：全角／半角以外の表記ゆれ、ページ番号のずれ、ヘッダー・脚注の混入 → `ignore_lines`）。
+不一致が出たら、`source/` のブロックを `raw/` の該当ページと見比べて直す（よくある原因：全角／半角以外の表記ゆれ、ページ番号のずれ、ヘッダー・印字ページ番号の行の混入 → `ignore_lines`）。本文中の脚注番号の省略、ページ下の脚注の行、ルビだけの行は、照合が自動で扱う。
 
 ### 大きな資料を並行して作る（任意）
 
@@ -103,7 +104,7 @@ python mysite/_build/verify_quotes.py   # 原文の照合。「不一致 0 件�
 
 サイトのフォルダ（`_build/` を除いてもよい）を静的ホスティングに置く。`_build/` を公開サーバーに置く場合は、中身（原稿・原文）が見えても困らないか確認する。
 
-- 元のPDFと `__pycache__` はコミットしない（`_build/.gitignore`）
+- 元のPDFと `__pycache__` はコミットしない（`_build/.gitignore`）。サイト直下の途中の原稿 `*.md` もコミットしない（`.gitignore`）
 - 親サイトがあるときは、親の `sitemap.xml` にもトップと本文ページを足す（OGP画像を `image:image` で添える）。公開後に Search Console へ sitemap を送り直す
 - 同じフォルダで別の作業（別のセッション）がブランチを切り替えていることがある。コミットの前に `git branch --show-current` を確かめる。心配なら `git worktree add` で別フォルダを作って作業する
 

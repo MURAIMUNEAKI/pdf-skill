@@ -25,6 +25,9 @@ def norm(s):
     return re.sub(r"\s", "", s)
 
 
+FOOTNOTES = {}  # ページ番号 → ページ下の脚注の行（本文とは別に照合する）
+
+
 def raw_pages(doc):
     x = build.DOCS[doc]
     ignore = [re.compile(r) for r in x.get("ignore_lines", [])]
@@ -42,14 +45,31 @@ def raw_pages(doc):
             continue
         if any(r.fullmatch(line.strip()) for r in ignore):
             continue
+        # ページ下の脚注の行（「61 「特定電気通信…」のように番号＋空白で始まる行）は、ページをまたぐ文の照合のじゃまになるので除く
+        if re.match(r"^\d{1,3} \S", line):
+            FOOTNOTES.setdefault(cur, []).append(line)
+            continue
+        # ルビ（ふりがな）だけの行は、本文の途中に割り込んで照合のじゃまになるので除く
+        if re.fullmatch(r"[ぁ-ゖー]{2,10}", line.strip()):
+            continue
         pages[cur].append(line)
     out = {}
     for k, v in pages.items():
         t = norm("\n".join(v))
         # 脚注番号（「(※2)」など）は原文欄では省くことがあるので、照合でも除く
         t = re.sub(r"\(※\d+\)", "", t)
+        # PDF抽出のゆれ（中黒の重複・括弧の後の余分な中黒・ハイフンの欠落）
+        t = t.replace("・・", "・").replace("「・", "「").replace("Endto-End", "End-to-End")
         out[k] = t
     return out
+
+
+def footnote_pat(s):
+    dig = set("0123456789０１２３４５６７８９,，.．")
+    out = [re.escape(s[0])] if s else []
+    for a, b in zip(s, s[1:]):
+        out.append(("" if a in dig or b in dig else r"\d{0,2}") + re.escape(b))
+    return "".join(out)
 
 
 def pieces(text):
@@ -84,6 +104,8 @@ def main():
             a, _, b = pg.partition("-")
             lo, hi = int(a) + x["offset"], int(b or a) + x["offset"]
             hay = "".join(pages.get(n, "") for n in range(lo, hi + 1))
+            # 脚注を原文欄に入れたときのために、範囲内のページ下の脚注も（本文の後ろに）照合の対象にする
+            hay += "\n" + norm("\n".join(l for n in range(lo, hi + 1) for l in FOOTNOTES.get(n, [])))
             for piece in pieces(text):
                 total += 1
                 n = norm(piece)
@@ -91,7 +113,9 @@ def main():
                     continue
                 # ページをまたぐ・図の中で語順が分かれる場合に備え、文ごとにも確かめる
                 sents = [norm(s) for s in re.split(r"(?<=[。、])", piece) if norm(s)]
-                missing = [s for s in sents if s not in hay]
+                # 本文中の脚注番号（例「推進方針1（」）は原文欄で省いてよい。
+                # 数字でない文字どうしの間にだけ1〜2桁の数字を許す（数値そのものの欠落は一致にしない）
+                missing = [s for s in sents if s not in hay and not re.search(footnote_pat(s), hay)]
                 if not missing:
                     continue
                 bad += 1

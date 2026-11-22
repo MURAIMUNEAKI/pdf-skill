@@ -100,7 +100,7 @@ def load_source(doc):
     blocks, cur = {}, None
     main = SOURCE / DOCS[doc]["file"]
     # 原文ブロックは章ごとのファイル（kanko_1.txt など、資料のファイル名＋「_」）に分けて書いてもよい
-    files = [main] + sorted(SOURCE.glob(main.stem + "_*" + main.suffix))
+    files = ([main] if main.exists() else []) + sorted(SOURCE.glob(main.stem + "_*" + main.suffix))
     lines = [ln for f in files for ln in f.read_text(encoding="utf-8").splitlines()]
     for line in lines:
         m = re.match(r"^@@\s+(\S+)\s+p=([\d\-]+)\s*$", line)
@@ -113,7 +113,12 @@ def load_source(doc):
     return {k: (v[0], "\n".join(v[1]).strip()) for k, v in blocks.items()}
 
 
-SOURCES = {d: load_source(d) for d in DOCS if (SOURCE / DOCS[d]["file"]).exists()}
+def has_source(doc):
+    main = SOURCE / DOCS[doc]["file"]
+    return main.exists() or any(SOURCE.glob(main.stem + "_*" + main.suffix))
+
+
+SOURCES = {d: load_source(d) for d in DOCS if has_source(d)}
 
 
 def page_label(doc, n):
@@ -1003,7 +1008,7 @@ def related_box(slug):
         return ""
     cards = "".join(f'<li><a href="{p[0]}.html"><span class="rb-group">{esc(p[3])}</span><b>{jb(p[2])}</b>'
                     f'<span class="rb-desc">{esc(plain(p[5], 70))}</span></a></li>' for p in rel)
-    return (f'<section class="related-box" aria-labelledby="rb-h"><h2 id="rb-h">あわせて読みたい事例</h2>'
+    return (f'<section class="related-box" aria-labelledby="rb-h"><h2 id="rb-h">{esc(S.get("related_title", "あわせて読みたい事例"))}</h2>'
             f'<ul>{cards}</ul></section>')
 
 
@@ -1292,8 +1297,9 @@ def render_index():
     cases_html = ('<section class="block" aria-labelledby="h-cases">'
                   f'<h2 id="h-cases">{esc(H.get("cases_title", "事例一覧"))}</h2>'
                   f'<p class="cases-lead">{esc(H.get("cases_lead", ""))}</p>'
-                  '<div class="table-wrap"><table class="cases-table"><thead><tr><th>番号</th><th>国・地域</th>'
-                  '<th>主な取組内容</th><th>取組による成果</th></tr></thead>'
+                  '<div class="table-wrap"><table class="cases-table"><thead><tr>'
+                  + "".join(f'<th>{esc(c)}</th>' for c in H.get("cases_cols", ["番号", "国・地域", "主な取組内容", "取組による成果"]))
+                  + '</tr></thead>'
                   f'<tbody>{case_rows}</tbody></table></div></section>') if cases else ""
     jump = [("h-docs", "資料"), ("h-toc", "記事の目次")] if docs else [("h-toc", "記事の目次")]
     if cases:

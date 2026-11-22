@@ -24,6 +24,7 @@
 | `license_name`, `license_url` | 任意。引用した資料の利用規約（例：公共データ利用規約（第1.0版）） |
 | `credit_note` | 出典欄の「どこまでが原文で、どこからが解説か」の説明 |
 | `ogp_label` | トップページのOGP画像の札 |
+| `related_title` | 任意。記事の最後の関連カードの見出し（既定「あわせて読みたい事例」。事例集でない資料なら「あわせて読みたいページ」など） |
 | `ogp_font_bold`, `ogp_font_regular` | 任意。OGP画像の日本語フォントのパス（見つからないときに指定） |
 
 ## author / publisher
@@ -55,7 +56,7 @@
 | `org`, `title`, `date`, `url` | 発行者・資料名・日付・PDFのURL（出典・「原本を開く」ボタン） |
 | `short` | 発行者の短い名前 |
 | `main` | 出典の一覧・トップの isBasedOn に含めるか（既定 true） |
-| `ignore_lines` | 任意。照合で無視する行の正規表現（ヘッダー・フッター・「別紙」など） |
+| `ignore_lines` | 任意。照合で無視する行の正規表現（ヘッダー・フッター・「別紙」など）。ページ末尾の印字ページ番号の行が文の途中に入る資料は `"\\d{1,3}"`（JSON の中なので `\` を2つ重ねる）を足す |
 
 ## groups
 
@@ -90,4 +91,4 @@
 - `search`：`placeholder`、`tips`、`desc`
 - `llms_intro`：llms.txt の冒頭の説明
 - `genbun_heading_regex`：任意。原文の中で太字の見出しにする行の正規表現
-- `home`：トップページ。`title`、`desc`、`keywords`、`eyebrow`、`h1`（`<br>` 可）、`h1_sub`、`lead`（HTML可）、`image`・`image_alt`（右側の正方形の画像。任意）、`buttons`（`label`/`href`/`primary`）、`who`（読む人別の入口 `label`/`href`/`text`）、`points_title`・`points`（`q`/`a`/`links`。FAQの構造化データにもなる。「〇〇とは何ですか？」「どんな事例がありますか？」のような、検索で打たれる問いを先頭に）、`doc_cards`（`slug`/`org`/`date`/`title`/`text`）、`cases_title`・`cases_lead`・`cases`（トップの一覧表。`no`/`slug`/`area`/`what`/`result` → 「番号・国・地域・主な取組内容・取組による成果」の表と ItemList の構造化データ。事例集なら資料の「事例の一覧」ページをもとに書く）
+- `home`：トップページ。`title`、`desc`、`keywords`、`eyebrow`、`h1`（`<br>` 可）、`h1_sub`、`lead`（HTML可）、`image`・`image_alt`（右側の正方形の画像。任意）、`buttons`（`label`/`href`/`primary`）、`who`（読む人別の入口 `label`/`href`/`text`）、`points_title`・`points`（`q`/`a`/`links`。FAQの構造化データにもなる。「〇〇とは何ですか？」「どんな事例がありますか？」のような、検索で打たれる問いを先頭に）、`doc_cards`（`slug`/`org`/`date`/`title`/`text`）、`cases_title`・`cases_lead`・`cases`（トップの一覧表。`no`/`slug`/`area`/`what`/`result` → 「番号・国・地域・主な取組内容・取組による成果」の表と ItemList の構造化データ。事例集なら資料の「事例の一覧」ページをもとに書く。事例集でない資料（計画・指針など）は `cases_cols` で列見出しを4つ指定する。例：`["項目", "分野", "主な取組", "読みどころ"]`）
