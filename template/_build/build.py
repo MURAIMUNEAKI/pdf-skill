@@ -276,6 +276,12 @@ def lead_html(md):
     return h
 
 
+def term_lead(content):
+    """用語ページの description：最初の段落が短い（70字未満）ときは2段落目まで使い、検索結果の説明が短くなりすぎないようにする"""
+    one = first_paragraphs(content, 1)
+    return one if len(plain(one)) >= 70 else first_paragraphs(content, 2)
+
+
 def first_paragraphs(text, n=2):
     paras = [p for p in re.split(r"\n\s*\n", text)
              if p.strip() and not p.lstrip().startswith(("-", "|", "1.", "#", "<"))]
@@ -1156,14 +1162,14 @@ def render_term(term, prev_t, next_t, corpus):
     if owner:
         # 「〇〇とは」は本文ページが担当。用語ページは「意味（一言で）」の検索を担当して重複を避ける
         title = f"{term}の意味を一言で｜{gname}"
-        desc = plain(f"{term}の意味を短く解説。" + first_paragraphs(content, 1), 118)
+        desc = plain(f"{term}の意味を短く解説。" + term_lead(content), 118)
         kws = [f"{term} 意味", f"{term} 用語", f"{term} 定義", f"{term} 一言で"]
         q_name = f"{term}の意味は？"
         owner_box = (f'<p class="owner-link"><b>詳しい解説：</b><a href="{owner[0]}">{esc(owner[1])}</a>'
                      f'で、{esc(term)}を原文と解説でくわしく読めます。</p>')
     else:
         title = f"{term}とは？意味をわかりやすく解説｜{gname}"
-        desc = plain(first_paragraphs(content, 1), 118)
+        desc = plain(term_lead(content), 118)
         kws = [f"{term}とは", f"{term} 意味", f"{term} わかりやすく"]
         q_name = f"{term}とは何ですか？"
         owner_box = ""

@@ -57,11 +57,22 @@ print("ok")
 
 GA を入れるときは、`grep -L "<測定ID>" *.html` で何も出ない（全ページに入っている）ことを確かめる。ストリームIDはGAの管理画面の番号で、ページには書かない。
 
+検索結果に出る説明文（meta description）が短すぎ・長すぎでないかも確かめる（目安 50〜200字。検索ページは除く）。用語ページは最初の段落を使い、70字未満なら2段落目まで足す（`build.py` の `term_lead`）。それでも短い用語は、用語集の最初の段落を1〜2文足す。
+
+```python
+import re, glob, html
+for f in glob.glob("*.html"):
+    m = re.search(r'<meta name="description" content="([^"]*)"', open(f, encoding="utf-8").read())
+    d = html.unescape(m.group(1)) if m else ""
+    if f != "search.html" and not 50 <= len(d) <= 200: print(f, len(d))
+```
+
 ## 5. 公開後
 
 - 本番URLで数ページ表示する（CSS/JS のキャッシュは `?v=<ハッシュ>` で自動更新される）
 - Google の「リッチリザルト テスト」で FAQ・パンくずの構造化データを確かめる
 - sitemap.xml を Search Console に送る（親サイトの sitemap.xml に足したときは、親のほうを送り直す）
+- 親サイトの sitemap.xml が、ドメイン直下の robots.txt（`Sitemap:` 行）かドメイン直下のサイトマップ索引（sitemapindex）に載っているかも確かめる。載っていなければ、親サイトの sitemap.xml を Search Console に直接登録する
 
 ## よくある失敗（実例）
 
