@@ -1184,3 +1184,49 @@ body,.page-main{background:#eef2f7}
   .genbun-copy{top:9px;right:9px;padding:4px 10px;font-size:12px}
 }
 @media print{.genbun-copy{display:none}}
+
+/* ===== 右上のハンバーガー（PC・タブレット）：資料のまとまりと記事の目次 ===== */
+.gmenu{position:relative;flex:0 0 auto}
+.gmenu-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:58px;height:46px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--navy);font:inherit;cursor:pointer}
+.gmenu-btn:hover{background:var(--soft)}
+.gm-bars{position:relative;display:block;width:22px;height:16px}
+.gm-bars::before,.gm-bars::after,.gm-bars span{content:"";position:absolute;left:0;width:22px;height:2.5px;border-radius:2px;background:currentColor;transition:transform .2s,opacity .2s}
+.gm-bars::before{top:0}.gm-bars span{top:6.75px}.gm-bars::after{bottom:0}
+.gmenu.open .gm-bars::before{transform:translateY(6.75px) rotate(45deg)}
+.gmenu.open .gm-bars span{opacity:0}
+.gmenu.open .gm-bars::after{transform:translateY(-6.75px) rotate(-45deg)}
+.gm-label{font-size:10.5px;font-weight:700;line-height:1;letter-spacing:.04em}
+.gmenu-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:70;width:min(380px,92vw);max-height:calc(100vh - 100px);overflow-y:auto;overscroll-behavior:contain;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px rgba(11,25,44,.18);padding:14px 14px 18px}
+.gmenu-panel[hidden]{display:none}
+.gm-tabs{display:flex;flex-direction:column;gap:4px;padding-bottom:12px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.gm-tabs a{display:block;padding:9px 12px;border-radius:10px;color:var(--navy);font-weight:700;text-decoration:none}
+.gm-tabs a:hover{background:var(--soft)}
+.gm-tabs a[aria-current]{background:var(--navy);color:#fff}
+.gm-book .mnav-h{display:block;margin:10px 0 4px;font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--navy)}
+.gm-book .bn-group{margin:12px 0 4px}
+.gm-book ul{list-style:none;margin:0;padding:0}
+.gm-book li a{display:block;padding:6px 10px;border-radius:8px;color:var(--ink-2);text-decoration:none;line-height:1.5;font-size:14px}
+.gm-book li a:hover{background:var(--soft)}
+.gm-book li a[aria-current]{background:var(--navy-soft);color:var(--navy);font-weight:700}
+@media (max-width:720px){.gmenu{display:none}}
+
+/* ===== トップの事例一覧の表 ===== */
+.cases-lead{margin:0 0 12px;color:var(--ink-2)}
+.cases-table{width:100%;border-collapse:collapse;font-size:14.5px}
+.cases-table th{background:var(--navy);color:#fff;text-align:left;padding:10px 12px;white-space:nowrap}
+.cases-table td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;background:var(--paper)}
+.cases-table tr:nth-child(even) td{background:#f6f9fc}
+.cases-table td.cs-no{white-space:nowrap;font-weight:700;color:var(--navy)}
+.cases-table td a{font-weight:700}
+
+/* ===== 記事の最後の「あわせて読みたい事例」 ===== */
+.related-box{margin:28px 0 8px;padding:18px 18px 8px;background:var(--paper);border:1px solid var(--line);border-radius:8px}
+.related-box h2{margin:0 0 12px;font-size:18px;color:var(--navy)}
+.related-box ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.related-box li a{display:flex;flex-direction:column;gap:4px;height:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);background:var(--bg)}
+.related-box li a:hover{border-color:var(--navy-2)}
+.related-box .rb-group{font-size:12px;color:var(--navy-2);font-weight:700}
+.related-box b{color:var(--navy);line-height:1.5}
+.related-box .rb-desc{font-size:13px;color:var(--ink-2);line-height:1.6}
+@media (max-width:900px){.related-box ul{grid-template-columns:1fr}}
+@media (max-width:720px){.related-box{padding:14px 12px 4px}}

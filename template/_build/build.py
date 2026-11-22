@@ -39,6 +39,8 @@ GA_ID = S.get("ga_id", "")
 PUBLISHED = S["published"]
 MODIFIED = S.get("modified") or date.today().isoformat()
 HERO_IMAGE = S.get("hero_image", "")
+# ヘッダーの「資料のまとまり」の出し方：menu＝右上のハンバーガー（既定）、tabs＝ヘッダー2段目のタブ
+HEADER_NAV = S.get("header_nav", "menu")
 LICENSE_NAME, LICENSE_URL = S.get("license_name", ""), S.get("license_url", "")
 CTA = CFG.get("cta") or {}
 SIDE_LINKS = CFG.get("side_links", [])
@@ -86,6 +88,8 @@ GROUP_ORDER = [g["name"] for g in GROUPS]
 PAGES = [(p["slug"], p["src"], p["short"], p["group"], p["seo"], p["desc"], p.get("keywords", []))
          for p in CFG["pages"]]
 PAGES = [p for p in PAGES if (SRC / p[1]).exists()]
+# ページごとの追加情報（place＝事例の地域、related＝関連するページの slug）
+PAGE_EXTRA = {p["slug"]: p for p in CFG["pages"]}
 SLUG_INDEX = {p[0]: i for i, p in enumerate(PAGES)}
 GLOSSARY_GROUP = next((p[3] for p in PAGES if p[0] == G_SLUG), GROUP_ORDER[-1])
 
@@ -94,7 +98,11 @@ GLOSSARY_GROUP = next((p[3] for p in PAGES if p[0] == G_SLUG), GROUP_ORDER[-1])
 def load_source(doc):
     """source/*.txt を {id: (page, text)} に読む"""
     blocks, cur = {}, None
-    for line in (SOURCE / DOCS[doc]["file"]).read_text(encoding="utf-8").splitlines():
+    main = SOURCE / DOCS[doc]["file"]
+    # 原文ブロックは章ごとのファイル（kanko_1.txt など、資料のファイル名＋「_」）に分けて書いてもよい
+    files = [main] + sorted(SOURCE.glob(main.stem + "_*" + main.suffix))
+    lines = [ln for f in files for ln in f.read_text(encoding="utf-8").splitlines()]
+    for line in lines:
         m = re.match(r"^@@\s+(\S+)\s+p=([\d\-]+)\s*$", line)
         if m:
             cur = m.group(1)
@@ -285,7 +293,9 @@ def genbun_html(text):
             out.append(md_to_html(s))
             continue
         h = esc(s).replace("\n", "<br>")
-        if re.match(r"^[・✓○※→]", s) or re.match(r"^[①-⑳]", s):
+        if "\n" not in s and G_HEAD.match(s) and "。" not in s and len(s) < 70:
+            out.append(f'<p class="g-h">{h}</p>')
+        elif re.match(r"^[・•✓○※→⇒]", s) or re.match(r"^[①-⑳]", s):
             out.append(f'<p class="g-li">{h}</p>')
         elif G_HEAD.match(s) and "。" not in s and len(s) < 70:
             out.append(f'<p class="g-h">{h}</p>')
@@ -501,8 +511,22 @@ def group_tabs(current):
     return f'<nav class="gtabs" aria-label="資料のまとまり"><div class="wrap gtabs-inner">{"".join(out)}</div></nav>'
 
 
+def group_menu(current):
+    """PC・タブレットの右上のハンバーガー：資料のまとまり（トップ・各章・付録）と記事の目次。
+    スマホ（720px以下）では出さず、メニューボタン（hpanel）の中の目次を使う"""
+    tabs = re.findall(r'<a href="([^"]+)"( aria-current="page")?>([^<]+)</a>', group_tabs(current))
+    links = "".join(f'<a href="{h}"{c}>{lb}</a>' for h, c, lb in tabs)
+    return (f'<div class="gmenu"><button class="gmenu-btn" type="button" aria-controls="gmenu-panel" aria-expanded="false" '
+            f'aria-label="メニューを開く"><span class="gm-bars" aria-hidden="true"><span></span></span><span class="gm-label">メニュー</span></button>'
+            f'<div class="gmenu-panel" id="gmenu-panel" hidden><nav class="gm-tabs" aria-label="資料のまとまり">{links}</nav>'
+            f'<nav class="gm-book" aria-label="記事の目次（メニュー）"><p class="mnav-h">記事の目次</p>{book_nav(current or "")}</nav></div></div>')
+
+
 def cta_link(cls, inner):
-    return f'<a class="{cls}" href="{esc(CTA["url"])}" target="_blank" rel="noopener">{inner}</a>'
+    # 同じサイト（base_url と同じホスト）の中への案内は同じタブで開く。別のサイトは新しいタブ
+    same = CTA["url"].split("/")[2:3] == BASE_URL.split("/")[2:3]
+    tgt = "" if same else ' target="_blank" rel="noopener"'
+    return f'<a class="{cls}" href="{esc(CTA["url"])}"{tgt}>{inner}</a>'
 
 
 def header_html(current=None, minfo=""):
@@ -530,11 +554,12 @@ def header_html(current=None, minfo=""):
       <div class="sresults" hidden></div>
     </form>
     <nav class="gnav" aria-label="関連サイト">{nav}</nav>
+    {group_menu(current) if HEADER_NAV != "tabs" else ""}
     <div class="mnav">{info}<nav class="mnav-book" aria-label="記事の目次（メニュー）"><p class="mnav-h">記事の目次</p>{book_nav(current or "")}</nav>
       {side}{msec}</div>
     </div>
   </div>
-  {group_tabs(current)}
+  {group_tabs(current) if HEADER_NAV == "tabs" else ""}
 </header>
 """
 
@@ -741,7 +766,10 @@ def article_ld(slug, title, desc, keywords, h1, faq_pairs, crumbs, docs):
          **({"isBasedOn": based} if based else {}),
          "about": [{"@type": "Thing", "name": n} for n in S.get("about", [])],
          **({"audience": {"@type": "Audience", "audienceType": S["audience"]}} if S.get("audience") else {}),
-         "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".lead", ".keypoints", ".answer-first"]}},
+         "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".lead", ".keypoints", ".answer-first"]},
+         **({"spatialCoverage": {"@type": "Place", "name": PAGE_EXTRA[slug]["place"]}} if PAGE_EXTRA.get(slug, {}).get("place") else {}),
+         **({"relatedLink": [BASE_URL + f"{r}.html" for r in PAGE_EXTRA[slug]["related"] if r in SLUG_INDEX]}
+            if PAGE_EXTRA.get(slug, {}).get("related") else {})},
         breadcrumb_ld(crumbs), AUTHOR, PUBLISHER,
     ]
     if faq_pairs:
@@ -963,8 +991,20 @@ def render_chapter(p):
     head_block = f"{intro_cta}\n{keypoints}\n{toc_html}"
     refs = refs_html(docs, refs_extra) if (docs or refs_extra) else ""
     body_html, refs = link_ref_numbers("".join(blocks), refs)
+    body_html += related_box(slug)
     return page_shell(slug, title, desc, kws, jsonld, crumbs, head_block, body_html + refs, minfo=meta_row,
                       top_block=top_block, side_toc=side_toc)
+
+
+def related_box(slug):
+    """節の後ろの「あわせて読みたい事例」：site.json の pages[].related に書いたページへのカード"""
+    rel = [PAGES[SLUG_INDEX[r]] for r in PAGE_EXTRA.get(slug, {}).get("related", []) if r in SLUG_INDEX]
+    if not rel:
+        return ""
+    cards = "".join(f'<li><a href="{p[0]}.html"><span class="rb-group">{esc(p[3])}</span><b>{jb(p[2])}</b>'
+                    f'<span class="rb-desc">{esc(plain(p[5], 70))}</span></a></li>' for p in rel)
+    return (f'<section class="related-box" aria-labelledby="rb-h"><h2 id="rb-h">あわせて読みたい事例</h2>'
+            f'<ul>{cards}</ul></section>')
 
 
 def link_ref_numbers(body_html, refs):
@@ -1246,7 +1286,18 @@ def render_index():
         webp = f'<source srcset="{esc(base)}.webp" type="image/webp">' if (ROOT / f"{base}.webp").exists() and ext != "webp" else ""
         img = (f'<picture class="hero-img">{webp}<img src="{esc(H["image"])}" alt="{esc(H.get("image_alt", ""))}" '
                f'width="960" height="960" fetchpriority="high"></picture>')
+    cases = [c for c in H.get("cases", []) if c["slug"] in SLUG_INDEX]
+    case_rows = "".join(f'<tr><td class="cs-no">{esc(c["no"])}</td><td><a href="{esc(c["slug"])}.html">{esc(c["area"])}</a></td>'
+                        f'<td>{esc(c["what"])}</td><td>{esc(c["result"])}</td></tr>' for c in cases)
+    cases_html = ('<section class="block" aria-labelledby="h-cases">'
+                  f'<h2 id="h-cases">{esc(H.get("cases_title", "事例一覧"))}</h2>'
+                  f'<p class="cases-lead">{esc(H.get("cases_lead", ""))}</p>'
+                  '<div class="table-wrap"><table class="cases-table"><thead><tr><th>番号</th><th>国・地域</th>'
+                  '<th>主な取組内容</th><th>取組による成果</th></tr></thead>'
+                  f'<tbody>{case_rows}</tbody></table></div></section>') if cases else ""
     jump = [("h-docs", "資料"), ("h-toc", "記事の目次")] if docs else [("h-toc", "記事の目次")]
+    if cases:
+        jump.insert(0, ("h-cases", "事例一覧"))
     if TERMS:
         jump.append(("h-terms", "用語"))
     if who:
@@ -1266,6 +1317,10 @@ def render_index():
                         "author": {"@type": "Organization", "name": DOCS[d]["org"]}} for d in MAIN_DOCS]},
         {"@type": "ItemList", "name": "目次", "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "name": p[2], "url": BASE_URL + f"{p[0]}.html"} for i, p in enumerate(PAGES)]},
+        *([{"@type": "ItemList", "@id": BASE_URL + "#cases", "name": H.get("cases_title", "事例一覧"),
+            "numberOfItems": len(cases), "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "url": BASE_URL + f'{c["slug"]}.html',
+                 "name": f'事例{c["no"]} {c["area"]}：{c["what"]}'} for i, c in enumerate(cases)]}] if cases else []),
         *([{"@type": "FAQPage", "@id": BASE_URL + "#faq", "mainEntity": faq}] if faq else []),
         AUTHOR, PUBLISHER]}
     page = head_html(title, desc, url, kws, BASE_URL + "ogp/index.png", jsonld, "website")
@@ -1291,6 +1346,7 @@ def render_index():
   </div>
 </section>
 <div class="wrap home-body">
+{cases_html}
 {f'''<section class="block" aria-labelledby="h-seo">
   <h2 id="h-seo">{esc(H.get("points_title", "要点"))}</h2>
   <div class="seo-points">{seo_points}</div>

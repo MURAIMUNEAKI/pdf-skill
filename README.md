@@ -11,8 +11,8 @@ Claude Code・Codex・そのほか SKILL.md / AGENTS.md を読めるエージェ
 - 各節が「質問 → 答え → 原文引用 → 解説 → ポイント → 立場別の確認事項 → よくある疑問」の形になる
 - 原文を PDF の文字と**機械照合**して、引用の誤りを 0 件にする
 - 用語集と用語の個別ページ、本文から用語への自動リンク、同義語つきのサイト内検索
-- 構造化データ（Article・FAQPage・DefinedTerm・パンくず）、OGP 画像、sitemap.xml、llms.txt
-- デザインは Google Stitch のデザインシステム「Civic Cyber Sentinel」（濃紺×シアン）を CSS に移植。スマホはハンバーガーメニュー
+- 構造化データ（Article＋事例の地域・関連ページ、FAQPage、DefinedTerm、パンくず、トップの一覧表の ItemList）、OGP 画像、sitemap.xml、llms.txt。記事の最後に「あわせて読みたい」カード
+- デザインは Google Stitch のデザインシステム「Civic Cyber Sentinel」（濃紺×シアン）を CSS に移植。右上のハンバーガーに資料のまとまりと目次をまとめる（スマホも同じくメニューボタン）
 - 必要なのは Python と `markdown`（OGP 画像に `pillow`、PDF 抽出に `pypdf` か Poppler の `pdftotext`）だけ。サーバー側のプログラムは不要
 
 ## 入れ方

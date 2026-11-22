@@ -15,6 +15,7 @@
 | `ga_id` | 任意。Google アナリティクスの測定ID |
 | `icon` | ヘッダーのマーク：`shield` / `book` / `doc` / `scale` |
 | `logo_char` | ファビコン・ロゴの1文字（既定はサイト名の1文字目） |
+| `header_nav` | 任意。資料のまとまり（`groups`）の出し方。`menu`（既定）＝右上のハンバーガーに、記事の目次とあわせて入れる／`tabs`＝ヘッダー2段目のタブ。スマホはどちらでもメニューボタンの中 |
 | `hero_image` | 任意。各ページの題名の下の横長の画像（例 `assets/hero.jpg`、同名の `.webp` があれば併用）。空なら濃紺の格子の帯 |
 | `about` | 構造化データの about（主題）の語 |
 | `audience` | 任意。想定読者（構造化データ） |
@@ -35,6 +36,7 @@
 ヘッダー右のボタン・著者バーのボタン・ページ下の帯・左の列・用語ページに出す、外部への案内。
 `label`（ボタンの文字）、`sub`（小さい説明）、`url`、`emoji`、`kicker`（帯の上の小見出し）、`band_title`、`band_lead`（帯の本文。`band_title` が空なら帯は出ない）、`side_title`。
 `cta` を `{}` にすると全部消える。
+`url` が `base_url` と同じホストなら同じタブで、別のサイトなら新しいタブで開く。
 
 ## side_links / related_links（任意）
 
@@ -74,6 +76,8 @@
 | `seo` | 題名と `<title>`（`｜` と途中の `？` で改行。manuscript-format.md 参照） |
 | `desc` | meta description（120字前後） |
 | `keywords` | 主要キーワード。先頭が「〇〇とは」だと用語ページとの役割分担に使われる |
+| `place` | 任意。そのページが扱う地域（例「長野県山ノ内町（志賀高原）」）。Article の `spatialCoverage`（Place）になる |
+| `related` | 任意。関連するページの slug の配列（2〜3個）。記事の最後の「あわせて読みたい事例」カードと、Article の `relatedLink` になる |
 
 ## roles / role_tags
 
@@ -86,4 +90,4 @@
 - `search`：`placeholder`、`tips`、`desc`
 - `llms_intro`：llms.txt の冒頭の説明
 - `genbun_heading_regex`：任意。原文の中で太字の見出しにする行の正規表現
-- `home`：トップページ。`title`、`desc`、`keywords`、`eyebrow`、`h1`（`<br>` 可）、`h1_sub`、`lead`（HTML可）、`image`・`image_alt`（右側の正方形の画像。任意）、`buttons`（`label`/`href`/`primary`）、`who`（読む人別の入口 `label`/`href`/`text`）、`points_title`・`points`（`q`/`a`/`links`。FAQの構造化データにもなる）、`doc_cards`（`slug`/`org`/`date`/`title`/`text`）
+- `home`：トップページ。`title`、`desc`、`keywords`、`eyebrow`、`h1`（`<br>` 可）、`h1_sub`、`lead`（HTML可）、`image`・`image_alt`（右側の正方形の画像。任意）、`buttons`（`label`/`href`/`primary`）、`who`（読む人別の入口 `label`/`href`/`text`）、`points_title`・`points`（`q`/`a`/`links`。FAQの構造化データにもなる。「〇〇とは何ですか？」「どんな事例がありますか？」のような、検索で打たれる問いを先頭に）、`doc_cards`（`slug`/`org`/`date`/`title`/`text`）、`cases_title`・`cases_lead`・`cases`（トップの一覧表。`no`/`slug`/`area`/`what`/`result` → 「番号・国・地域・主な取組内容・取組による成果」の表と ItemList の構造化データ。事例集なら資料の「事例の一覧」ページをもとに書く）

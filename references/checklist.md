@@ -39,11 +39,29 @@ sitemap.xml の全ページを 375px の枠で順に開き、`scrollWidth` が 3
 
 はみ出しのよくある原因：長いURL・英単語（→ `overflow-wrap:anywhere`）、幅指定の画像・表、`<pre>`。
 
+## 4-2. リンク・構造化データ・アクセス解析
+
+```python
+# サイトのフォルダで実行。リンク切れ（存在しないファイル・アンカー）と、JSON-LD が読めないページを出す
+import re, json, pathlib
+files = {p.name: p.read_text(encoding="utf-8") for p in pathlib.Path(".").glob("*.html")}
+ids = {n: set(re.findall(r'id="([^"]+)"', t)) for n, t in files.items()}
+for n, t in files.items():
+    for f, a in re.findall(r'href="([^"#:?]*\.html)?(#[^"]*)?"', t):
+        if f and f not in files: print("no file", n, f)
+        elif a and len(a) > 1 and (f or n) in ids and a[1:] not in ids[f or n]: print("no anchor", n, f + a)
+    for m in re.findall(r'<script type="application/ld\+json">(.*?)</script>', t, re.S):
+        json.loads(m)
+print("ok")
+```
+
+GA を入れるときは、`grep -L "<測定ID>" *.html` で何も出ない（全ページに入っている）ことを確かめる。ストリームIDはGAの管理画面の番号で、ページには書かない。
+
 ## 5. 公開後
 
 - 本番URLで数ページ表示する（CSS/JS のキャッシュは `?v=<ハッシュ>` で自動更新される）
 - Google の「リッチリザルト テスト」で FAQ・パンくずの構造化データを確かめる
-- sitemap.xml を Search Console に送る
+- sitemap.xml を Search Console に送る（親サイトの sitemap.xml に足したときは、親のほうを送り直す）
 
 ## よくある失敗（実例）
 

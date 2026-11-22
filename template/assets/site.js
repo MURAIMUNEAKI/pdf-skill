@@ -335,3 +335,20 @@
     }
   }
 })();
+
+// 右上のハンバーガー（PC・タブレット）
+(function () {
+  var wrap = document.querySelector('.gmenu');
+  if (!wrap) return;
+  var btn = wrap.querySelector('.gmenu-btn');
+  var panel = document.getElementById('gmenu-panel');
+  var set = function (open) {
+    wrap.classList.toggle('open', open);
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-label', open ? 'メニューを閉じる' : 'メニューを開く');
+  };
+  btn.addEventListener('click', function (e) { e.stopPropagation(); set(panel.hidden); });
+  document.addEventListener('click', function (e) { if (!panel.hidden && !wrap.contains(e.target)) set(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) { set(false); btn.focus(); } });
+})();
