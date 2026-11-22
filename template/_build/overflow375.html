@@ -24,7 +24,7 @@
     await new Promise(r => setTimeout(r, 1000));
     if (!css) return [`${p} style.css を読み込めませんでした`];
     const issues = [];
-    // 解説欄の顔写真が、見出しの帯（「本記事の著者の解説」）からはみ出して本文に重なっていないか
+    // 解説欄の顔写真が、見出しの帯（「わかりやすい解説」）からはみ出して本文に重なっていないか
     [...d.querySelectorAll('.voice')].forEach((v, k) => {
       const fc = v.querySelector('.voice-face'), lb = v.querySelector('.voice-label');
       if (!fc || !lb || d.defaultView.getComputedStyle(fc).display === 'none') return;

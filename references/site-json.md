@@ -29,7 +29,7 @@
 
 ## author / publisher
 
-`author`：`name`、`url`（任意）、`label`（例「本記事の著者」）、`title`（肩書き）、`bio`（紹介文）、`image`（顔写真のURL。任意）。
+`author`：`name`、`url`（任意）、`label`（例「本記事の著者」。署名行と著者紹介に使う。解説の吹き出しの見出しは常に「わかりやすい解説」）、`title`（肩書き）、`bio`（紹介文）、`image`（顔写真のURL。任意）。
 `publisher`：`name`、`url`。
 
 ## cta（任意）

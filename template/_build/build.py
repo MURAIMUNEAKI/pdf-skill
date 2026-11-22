@@ -708,7 +708,7 @@ def author_box():
 
 def voice_html(inner):
     return (f'<div class="voice{"" if A.get("image") else " no-face"}">{face("voice-face", 56)}'
-            f'<div class="voice-body"><p class="voice-label">{esc(A.get("label", "本記事の著者"))}の解説</p>{inner}</div></div>')
+            f'<div class="voice-body"><p class="voice-label">わかりやすい解説</p>{inner}</div></div>')
 
 
 def pager(slug):

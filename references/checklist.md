@@ -35,7 +35,7 @@ chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1280,1600 --
 ローカルサーバーを立てたまま `http://localhost:8000/_build/overflow375.html` を開く。
 sitemap.xml の全ページを 375px の枠で順に開き、`scrollWidth` が 375 を超えたページと、はみ出している要素を表示する。
 `DONE N pages, over=0` になればよい。
-あわせて、解説欄（「本記事の著者の解説」）の顔写真が見出しの帯からはみ出して本文に重なっていないかも調べる。特定のページだけ見るときは `overflow375.html#a.html,b.html`。
+あわせて、解説欄（「わかりやすい解説」）の顔写真が見出しの帯からはみ出して本文に重なっていないかも調べる。特定のページだけ見るときは `overflow375.html#a.html,b.html`。
 
 はみ出しのよくある原因：長いURL・英単語（→ `overflow-wrap:anywhere`）、幅指定の画像・表、`<pre>`。
 
